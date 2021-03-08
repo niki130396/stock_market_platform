@@ -1,0 +1,6 @@
+
+
+MONGO_HOST=mongo
+MONGO_DB=stock_market_db
+MONGO_USER=root
+MONGO_PASSWORD=root_password

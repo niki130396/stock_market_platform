@@ -2,7 +2,7 @@
 Base settings to build other settings files upon.
 """
 from pathlib import Path
-
+import os
 import environ
 
 ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
@@ -40,7 +40,19 @@ LOCALE_PATHS = [str(ROOT_DIR / "locale")]
 # DATABASES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
-DATABASES = {"default": env.db("DATABASE_URL")}
+DATABASES = {
+    "default": env.db("DATABASE_URL"),
+    "stock_market_db": {
+        "ENGINE": "djongo",
+        "NAME": "stock_market_db",
+        "CLIENT": {
+            "host": os.environ.get("MONGO_HOST"),
+            "username": os.environ.get("MONGO_USER"),
+            "password": os.environ.get("MONGO_PASSWORD"),
+            "port": 27017
+        }
+    }
+}
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
 
 # URLS
@@ -75,6 +87,7 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "stock_market_platform.users.apps.UsersConfig",
+    "stock_market_platform.financial_statements"
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
