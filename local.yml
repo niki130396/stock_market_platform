@@ -76,6 +76,8 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: root_password
+    volumes:
+    - ./mongo-volume:/data/db
     ports:
     - "27017:27017"
     container_name: mongo
@@ -83,6 +85,8 @@ services:
   mongo-express:
     image: mongo-express
     restart: always
+    depends_on:
+      - mongo
     ports:
     - "8081:8081"
     environment:
