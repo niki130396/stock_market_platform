@@ -4,4 +4,8 @@ from djongo import models
 
 
 class SomeTable(models.Model):
+    """
+    Test pre-commit
+    """
+
     some_field = models.CharField(max_length=120)
