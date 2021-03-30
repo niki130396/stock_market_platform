@@ -5,7 +5,7 @@ volumes:
   local_postgres_data_backups: {}
 
 services:
-  django:
+  django: &django
     build:
       context: .
       dockerfile: ./compose/local/django/Dockerfile
@@ -22,6 +22,8 @@ services:
       - ./.envs/.local/.mongo
     ports:
       - "8000:8000"
+    links:
+      - "redis:redis"
     command: /start
 
   postgres:
@@ -98,3 +100,33 @@ services:
   redis:
     image: redis:5.0
     container_name: redis
+    ports:
+    - "6379:6379"
+
+  celeryworker:
+    <<: *django
+    image: stock_market_platform_local_celeryworker
+    container_name: celeryworker
+    depends_on:
+      - redis
+      - postgres
+    ports: []
+    command: /start-celeryworker
+
+  celerybeat:
+    <<: *django
+    image: stock_market_platform_local_celerybeat
+    container_name: celerybeat
+    depends_on:
+      - redis
+      - postgres
+    ports: []
+    command: /start-celerybeat
+
+  flower:
+    <<: *django
+    image: stock_market_platform_local_flower
+    container_name: flower
+    ports:
+    - "5555:5555"
+    command: /start-flower

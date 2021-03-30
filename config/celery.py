@@ -1,16 +1,16 @@
+import os
+
 from celery import Celery
 
-celery_app = Celery(
-    "stock_market_platform",
-    backend="redis://localhost",
-    broker="redis://localhost",
-    include=["stock_market_platform.statements_crawling.tasks"],
-)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 
-celery_app.conf.update(
-    task_serializer="json",
-    accept_content=["json"],
-    result_serializer="json",
-    timezone="Europe/Sofia",
-    enable_utc=True,
-)
+app = Celery("stock_market_platform")
+
+# Using a string here means the worker doesn't have to serialize
+# the configuration object to child processes.
+# - namespace='CELERY' means all celery-related configuration keys
+#   should have a `CELERY_` prefix.
+app.config_from_object("django.conf:settings", namespace="CELERY")
+
+# Load task modules from all registered Django app configs.
+app.autodiscover_tasks()
