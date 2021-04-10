@@ -4,6 +4,29 @@ volumes:
   local_postgres_data: {}
   local_postgres_data_backups: {}
 
+x-airflow-common:
+  &airflow-common
+  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.0.1}
+  environment:
+    &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://vYFyCTEJOyYWibhYuVxlnvezFuDHwGXI:tD8Fpalp5GviRKn8zbBc0GdCIRWxynoqChkm4NaEG7g42lJgypqC1Iw8X7l6zAv5@postgres/stock_market_platform
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://vYFyCTEJOyYWibhYuVxlnvezFuDHwGXI:tD8Fpalp5GviRKn8zbBc0GdCIRWxynoqChkm4NaEG7g42lJgypqC1Iw8X7l6zAv5@postgres/stock_market_platform
+    AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
+    AIRFLOW__CORE__FERNET_KEY: ''
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./logs:/opt/airflow/logs
+    - ./plugins:/opt/airflow/plugins
+  user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"
+  depends_on:
+    redis:
+      condition: service_healthy
+    postgres:
+      condition: service_healthy
+
 services:
   django: &django
     build:
@@ -39,6 +62,11 @@ services:
       - ./.envs/.local/.postgres
     ports:
     - "5432:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "airflow" ]
+      interval: 5s
+      retries: 5
+    restart: always
 
   docs:
     image: stock_market_platform_local_docs
@@ -56,23 +84,23 @@ services:
       - "7000:7000"
     command: /start-docs
 
-  node:
-    build:
-      context: .
-      dockerfile: ./compose/local/node/Dockerfile
-    image: stock_market_platform_local_node
-    container_name: node
-    depends_on:
-      - django
-    volumes:
-      - .:/app:z
-      # http://jdlm.info/articles/2016/03/06/lessons-building-node-app-docker.html
-      - /app/node_modules
-    command: npm run dev
-    ports:
-      - "3000:3000"
-      # Expose browsersync UI: https://www.browsersync.io/docs/options/#option-ui
-      - "3001:3001"
+#  node:
+#    build:
+#      context: .
+#      dockerfile: ./compose/local/node/Dockerfile
+#    image: stock_market_platform_local_node
+#    container_name: node
+#    depends_on:
+#      - django
+#    volumes:
+#      - .:/app:z
+#      # http://jdlm.info/articles/2016/03/06/lessons-building-node-app-docker.html
+#      - /app/node_modules
+#    command: npm run dev
+#    ports:
+#      - "3000:3000"
+#      # Expose browsersync UI: https://www.browsersync.io/docs/options/#option-ui
+#      - "3001:3001"
 
   mongo:
     image: mongo
@@ -102,26 +130,32 @@ services:
     container_name: redis
     ports:
     - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 30s
+      retries: 50
+    restart: always
 
-  celeryworker:
-    <<: *django
-    image: stock_market_platform_local_celeryworker
-    container_name: celeryworker
-    depends_on:
-      - redis
-      - postgres
-    ports: []
-    command: /start-celeryworker
+#  celeryworker:
+#    <<: *django
+#    image: stock_market_platform_local_celeryworker
+#    container_name: celeryworker
+#    depends_on:
+#      - redis
+#      - postgres
+#    ports: []
+#    command: /start-celeryworker
 
-  celerybeat:
-    <<: *django
-    image: stock_market_platform_local_celerybeat
-    container_name: celerybeat
-    depends_on:
-      - redis
-      - postgres
-    ports: []
-    command: /start-celerybeat
+#  celerybeat:
+#    <<: *django
+#    image: stock_market_platform_local_celerybeat
+#    container_name: celerybeat
+#    depends_on:
+#      - redis
+#      - postgres
+#    ports: []
+#    command: /start-celerybeat
 
   flower:
     <<: *django
@@ -130,3 +164,35 @@ services:
     ports:
     - "5555:5555"
     command: /start-flower
+
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+      - 8080:8080
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "http://localhost:8080/health" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: always
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    restart: always
+
+  airflow-worker:
+    <<: *airflow-common
+    command: celery worker
+    restart: always
+
+  airflow-init:
+    <<: *airflow-common
+    command: version
+    environment:
+      <<: *airflow-common-env
+      _AIRFLOW_DB_UPGRADE: 'true'
+      _AIRFLOW_WWW_USER_CREATE: 'true'
+      _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
+      _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}

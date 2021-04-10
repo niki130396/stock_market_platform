@@ -89,7 +89,8 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "stock_market_platform.users.apps.UsersConfig",
-    "stock_market_platform.financial_statements"
+    "stock_market_platform.financial_statements",
+    "stock_market_platform.statements_crawling",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
