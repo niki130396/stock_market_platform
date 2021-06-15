@@ -6,6 +6,9 @@ volumes:
 
 x-airflow-common:
   &airflow-common
+  build:
+    context: .
+    dockerfile: ./compose/local/airflow/Dockerfile
   image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.0.1}
   environment:
     &airflow-common-env
@@ -22,10 +25,8 @@ x-airflow-common:
     - ./plugins:/opt/airflow/plugins
   user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"
   depends_on:
-    redis:
-      condition: service_healthy
-    postgres:
-      condition: service_healthy
+    - redis
+    - postgres
 
 services:
   django: &django
@@ -62,10 +63,6 @@ services:
       - ./.envs/.local/.postgres
     ports:
     - "5432:5432"
-    healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "airflow" ]
-      interval: 5s
-      retries: 5
     restart: always
 
   docs:
@@ -83,24 +80,6 @@ services:
     ports:
       - "7000:7000"
     command: /start-docs
-
-#  node:
-#    build:
-#      context: .
-#      dockerfile: ./compose/local/node/Dockerfile
-#    image: stock_market_platform_local_node
-#    container_name: node
-#    depends_on:
-#      - django
-#    volumes:
-#      - .:/app:z
-#      # http://jdlm.info/articles/2016/03/06/lessons-building-node-app-docker.html
-#      - /app/node_modules
-#    command: npm run dev
-#    ports:
-#      - "3000:3000"
-#      # Expose browsersync UI: https://www.browsersync.io/docs/options/#option-ui
-#      - "3001:3001"
 
   mongo:
     image: mongo
@@ -130,32 +109,7 @@ services:
     container_name: redis
     ports:
     - "6379:6379"
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 5s
-      timeout: 30s
-      retries: 50
     restart: always
-
-#  celeryworker:
-#    <<: *django
-#    image: stock_market_platform_local_celeryworker
-#    container_name: celeryworker
-#    depends_on:
-#      - redis
-#      - postgres
-#    ports: []
-#    command: /start-celeryworker
-
-#  celerybeat:
-#    <<: *django
-#    image: stock_market_platform_local_celerybeat
-#    container_name: celerybeat
-#    depends_on:
-#      - redis
-#      - postgres
-#    ports: []
-#    command: /start-celerybeat
 
   flower:
     <<: *django
@@ -170,11 +124,6 @@ services:
     command: webserver
     ports:
       - 8080:8080
-    healthcheck:
-      test: [ "CMD", "curl", "--fail", "http://localhost:8080/health" ]
-      interval: 10s
-      timeout: 10s
-      retries: 5
     restart: always
 
   airflow-scheduler:
