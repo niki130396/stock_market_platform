@@ -1,4 +1,4 @@
-from djongo import models
+from django.db import models
 
 # Create your models here.
 
@@ -13,3 +13,4 @@ class StatementsMetaData(models.Model):
     volume = models.IntegerField(blank=True, null=True)
     sector = models.CharField(max_length=255, blank=True, null=True)
     industry = models.CharField(max_length=255, blank=True, null=True)
+    is_available = models.BooleanField(default=False)
