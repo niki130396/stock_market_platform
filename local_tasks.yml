@@ -1,0 +1,118 @@
+version: '3'
+
+volumes:
+  local_postgres_data: {}
+  local_postgres_data_backups: {}
+
+x-airflow-common:
+  &airflow-common
+  build:
+    context: .
+    dockerfile: ./compose/local/airflow/Dockerfile
+  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.0.1}
+  environment:
+    &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://vYFyCTEJOyYWibhYuVxlnvezFuDHwGXI:tD8Fpalp5GviRKn8zbBc0GdCIRWxynoqChkm4NaEG7g42lJgypqC1Iw8X7l6zAv5@postgres/stock_market_platform
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://vYFyCTEJOyYWibhYuVxlnvezFuDHwGXI:tD8Fpalp5GviRKn8zbBc0GdCIRWxynoqChkm4NaEG7g42lJgypqC1Iw8X7l6zAv5@postgres/stock_market_platform
+    AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
+    AIRFLOW__CORE__FERNET_KEY: ''
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./logs:/opt/airflow/logs
+    - ./plugins:/opt/airflow/plugins
+    - ./scrapy_tasks:/opt/airflow/scrapy_tasks
+  user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"
+  depends_on:
+    - redis
+    - postgres
+    - mongo
+
+services:
+
+  postgres:
+    build:
+      context: .
+      dockerfile: ./compose/production/postgres/Dockerfile
+    image: stock_market_platform_production_postgres
+    container_name: stock_market_tasks_postgres
+    volumes:
+      - local_postgres_data:/var/lib/postgresql/data:Z
+      - local_postgres_data_backups:/backups:z
+    env_file:
+      - ./.envs/.local/.postgres
+    ports:
+    - "5433:5432"
+    restart: always
+
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root_password
+    volumes:
+    - ./mongo-volume:/data/db
+    ports:
+    - "27018:27017"
+    container_name: stock_market_tasks_mongo
+
+#  mongo-express:
+#    image: mongo-express
+#    container_name: stock_market_tasks_mongo-express
+#    restart: always
+#    depends_on:
+#      - mongo
+#    ports:
+#    - "8082:8081"
+#    environment:
+#      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+#      ME_CONFIG_MONGODB_ADMINPASSWORD: root_password
+
+  redis:
+    image: redis:5.0
+    container_name: stock_market_tasks_redis
+    ports:
+      - "6380:6379"
+    restart: always
+
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+      - 8080:8080
+    restart: always
+    env_file:
+      - ./.envs/.local/.mongo
+      - ./.envs/.local/.alpha_vantage
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    restart: always
+    env_file:
+      - ./.envs/.local/.mongo
+      - ./.envs/.local/.alpha_vantage
+
+  airflow-worker:
+    <<: *airflow-common
+    command: celery worker
+    restart: always
+    env_file:
+      - ./.envs/.local/.mongo
+      - ./.envs/.local/.alpha_vantage
+
+  airflow-init:
+    <<: *airflow-common
+    command: version
+    env_file:
+      - ./.envs/.local/.mongo
+      - ./.envs/.local/.alpha_vantage
+    environment:
+      <<: *airflow-common-env
+      _AIRFLOW_DB_UPGRADE: 'true'
+      _AIRFLOW_WWW_USER_CREATE: 'true'
+      _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
+      _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}

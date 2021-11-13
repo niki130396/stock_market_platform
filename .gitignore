@@ -329,3 +329,5 @@ stock_market_platform/media/
 .env
 .envs/*
 !.envs/.local/
+/kubernetes
+/mongo-volume
