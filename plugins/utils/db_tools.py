@@ -1,6 +1,8 @@
+import os
 from collections import defaultdict
 
 import psycopg2
+from jinja2 import Template
 from utils.models import DocumentModel
 
 connection_kwargs = {
@@ -15,16 +17,23 @@ connection = psycopg2.connect(**connection_kwargs)
 cursor = connection.cursor()
 
 
+def get_from_sql(rel_file_path: str, **kwargs):
+    name, extension = rel_file_path.split(".")
+    if extension != "sql":
+        raise ValueError("Only .sql extension files supported")
+    current_file_path = os.path.dirname(__file__)
+    abs_file_path = os.path.join(current_file_path, rel_file_path)
+    with open(abs_file_path, "r") as sql_file:
+        SQL = Template(sql_file.read()).render(**kwargs)
+        return SQL
+
+
 def update_ticker_status():
     pass
 
 
 def get_unfetched_objects():
-    SQL = """
-        SELECT * FROM financial_statements_statementsmetadata
-         WHERE is_available = False
-         ORDER BY company_id
-    """
+    SQL = get_from_sql("query_statements/select_unfetched_statements.sql")
     cursor.execute(SQL)
     output = []
     for row in cursor.fetchall():
@@ -37,18 +46,7 @@ def get_unfetched_objects():
 
 
 def get_source_statement_types_map():
-    SQL = """
-        SELECT
-            statement_type_name_from_source,
-            statement_type_local_name
-        FROM crawling_statementtypesourcedefinition source
-
-        JOIN crawling_statementtypelocaldefinition local
-        ON local.statement_type_definition_id = source.local_statement_type_id
-
-        JOIN crawling_crawlingsourcedetails details
-        ON details.crawling_source_id = source.crawling_source_id
-    """
+    SQL = get_from_sql("query_statements/source_statement_types.sql")
     statements_map = {}
 
     cursor.execute(SQL)
@@ -58,20 +56,6 @@ def get_source_statement_types_map():
 
 
 class NormalizedFieldsProcessor:
-    SQL = """
-        SELECT
-            field.name,
-            normalized.name,
-            normalized.statement_type
-        FROM crawling_crawlingsourcedetails source
-
-        JOIN %s field
-        ON field.crawling_source_id = source.crawling_source_id
-        JOIN crawling_normalizedfield normalized
-        ON normalized.field_id = field.normalized_field_id
-        WHERE source.name = '%s'
-    """
-
     def __init__(self, source_name):
         self.__source_name = source_name
         self.__statement_types_map = get_source_statement_types_map()
@@ -94,7 +78,13 @@ class NormalizedFieldsProcessor:
         ]
         output = {}
         for table in local_field_tables:
-            cursor.execute(self.SQL % (table, self.__source_name))
+            cursor.execute(
+                get_from_sql(
+                    "query_statements/normalized_fields.sql",
+                    field_table=table,
+                    source_name=self.__source_name,
+                )
+            )
             output.update(self.fetch_fields())
         return output
 
