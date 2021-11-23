@@ -71,21 +71,14 @@ class NormalizedFieldsProcessor:
         return output
 
     def fetch_source_and_normalized_field_names(self):
-        local_field_tables = [
-            "crawling_incomestatementfield",
-            "crawling_balancesheetfield",
-            "crawling_cashflowfield",
-        ]
         output = {}
-        for table in local_field_tables:
-            cursor.execute(
-                get_from_sql(
-                    "query_statements/normalized_fields.sql",
-                    field_table=table,
-                    source_name=self.__source_name,
-                )
+        cursor.execute(
+            get_from_sql(
+                "query_statements/normalized_fields.sql",
+                source_name=self.__source_name,
             )
-            output.update(self.fetch_fields())
+        )
+        output.update(self.fetch_fields())
         return output
 
     @property
