@@ -331,3 +331,4 @@ stock_market_platform/media/
 !.envs/.local/
 /kubernetes
 /mongo-volume
+bin
