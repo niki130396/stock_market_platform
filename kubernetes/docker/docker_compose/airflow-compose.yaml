@@ -1,0 +1,69 @@
+version: '3'
+
+x-airflow-common:
+  &airflow-common
+  build:
+    context: .
+    dockerfile: ./Dockerfile
+  image: niki130396/airflow
+  environment:
+    &airflow-common-env
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: niki130396
+    POSTGRES_DB: postgres
+    POSTGRES_HOST: 192.168.0.104
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./logs:/opt/airflow/logs
+    - ./plugins:/opt/airflow/plugins
+    - ./scrapy_tasks:/opt/airflow/scrapy_tasks
+  user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"
+  depends_on:
+    - redis
+
+services:
+    redis:
+        image: 'redis:5.0.5'
+
+    webserver:
+        <<: *airflow-common
+        environment:
+          <<: *airflow-common-env
+          FERNET_KEY: "46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho="
+          EXECUTOR: "Celery"
+        ports:
+            - "8080:8080"
+        command: webserver
+        healthcheck:
+            test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+            interval: 30s
+            timeout: 30s
+            retries: 3
+
+    scheduler:
+        <<: *airflow-common
+        environment:
+          <<: *airflow-common-env
+          FERNET_KEY: "46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho="
+          EXECUTOR: "Celery"
+        command: scheduler
+
+    worker:
+        <<: *airflow-common
+        environment:
+            <<: *airflow-common-env
+            FERNET_KEY: "46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho="
+            EXECUTOR: "Celery"
+        command: worker
+
+    airflow-init:
+      <<: *airflow-common
+      command: db init
+      environment:
+        <<: *airflow-common-env
+        _AIRFLOW_DB_UPGRADE: 'true'
+        _AIRFLOW_WWW_USER_CREATE: 'true'
+        _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
+        _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}

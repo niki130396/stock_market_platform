@@ -1,0 +1,25 @@
+image:
+  repository: arm32v7/postgres
+  tag: 11.6
+
+persistence:
+  mountPath: /data
+  size: 20Gi
+  storageClass: nfs-client
+
+postgresqlDataDir: /data/pgdata
+
+volumePermissions:
+  image:
+    repository: arm32v7/alpine
+    tag: "3.10"
+
+securityContext:
+  fsGroup: 999
+  runAsUser: 999
+
+livenessProbe:
+  initialDelaySeconds: 300
+
+readinessProbe:
+  initialDelaySeconds: 300
