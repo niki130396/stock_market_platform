@@ -330,3 +330,4 @@ stock_market_platform/media/
 .envs/*
 !.envs/.local/
 /mongo-volume
+bin
