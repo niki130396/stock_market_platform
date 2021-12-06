@@ -34,6 +34,12 @@ def update_ticker_status(symbol):
     connection.commit()
 
 
+def update_statement_type_availability(statement_type, symbol):
+    SQL = get_from_sql(f"query_statements/set_{statement_type}_availability.sql", symbol=symbol)
+    cursor.execute(SQL)
+    connection.commit()
+
+
 def get_unfetched_objects():
     SQL = get_from_sql("query_statements/select_unfetched_statements.sql")
     cursor.execute(SQL)

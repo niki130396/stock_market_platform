@@ -14,3 +14,6 @@ class StatementsMetaData(models.Model):
     sector = models.CharField(max_length=255, blank=True, null=True)
     industry = models.CharField(max_length=255, blank=True, null=True)
     is_available = models.BooleanField(default=False)
+    is_income_statement_available = models.BooleanField(default=False)
+    is_balance_sheet_statement_available = models.BooleanField(default=False)
+    is_cash_flow_statement_available = models.BooleanField(default=False)
