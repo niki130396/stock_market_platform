@@ -6,7 +6,7 @@ from scrapy.spiders import CrawlSpider
 from scrapy_tasks.items import FinancialStatementItem
 
 sys.path.insert(0, f"{environ['AIRFLOW_HOME']}/plugins/")
-from utils.db_tools import NormalizedFieldsProcessor, get_unfetched_objects  # noqa E402
+from utils.db_tools import NormalizedFieldsProcessor, get_unfetched_objects, get_source_statement_types_map  # noqa E402
 from utils.models import DocumentModel  # noqa E402
 
 
@@ -19,6 +19,9 @@ class YahooFinanceStatementsSpider(CrawlSpider):
     def start_requests(self):
         fields_processor = NormalizedFieldsProcessor("yahoo_finance")
         self.normalized_fields = fields_processor.mapped_source_fields
+        self.local_statement_types = {
+            v: k for k, v in get_source_statement_types_map().items()
+        }
         urls = []
         unfetched_objects = get_unfetched_objects()
         for obj in unfetched_objects:
@@ -38,10 +41,13 @@ class YahooFinanceStatementsSpider(CrawlSpider):
         statement_type = response.meta.get("statement_type")
         document: DocumentModel = response.meta.get("document")
         financial_statement = FinancialStatementItem()
-        financial_statement["data"] = document.__dict__
+        financial_statement["metadata"] = document.__dict__
         rows = self.get_rows(response)
         elements_by_column = self.extract_elements_by_column(rows, statement_type)
-        financial_statement.add_statement(statement_type, elements_by_column)
+
+        local_statement_type = self.local_statement_types[statement_type]
+        financial_statement["metadata"].update({"statement_type": local_statement_type})
+        financial_statement["data"] = elements_by_column
         yield financial_statement
 
     def get_rows(self, response):

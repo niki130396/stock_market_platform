@@ -36,4 +36,4 @@ SELECT * FROM (
         ON normalized.field_id = field.normalized_field_id
     WHERE field.crawling_source_id IN (SELECT * FROM source_name)
 ) statement_fields
-ORDER BY statement_fields.statement_type
+ORDER BY statement_fields.statement_type;

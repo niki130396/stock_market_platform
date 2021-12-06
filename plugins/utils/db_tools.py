@@ -28,8 +28,10 @@ def get_from_sql(rel_file_path: str, **kwargs):
         return SQL
 
 
-def update_ticker_status():
-    pass
+def update_ticker_status(symbol):
+    SQL = get_from_sql("query_statements/update_ticker_is_available.sql", symbol=symbol)
+    cursor.execute(SQL)
+    connection.commit()
 
 
 def get_unfetched_objects():

@@ -5,6 +5,7 @@
 
 
 import pymongo
+from utils.db_tools import update_ticker_status
 
 
 class FinancialStatementPipeline:
@@ -13,6 +14,7 @@ class FinancialStatementPipeline:
     def __init__(self, mongo_uri, mongo_db):
         self.mongo_uri = mongo_uri
         self.mongo_db = mongo_db
+        self.current_symbol = {}
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -32,4 +34,5 @@ class FinancialStatementPipeline:
         item = dict(item)
 
         self.db[self.collection_name].insert(item)
+        update_ticker_status(item["data"]["symbol"])
         return item
