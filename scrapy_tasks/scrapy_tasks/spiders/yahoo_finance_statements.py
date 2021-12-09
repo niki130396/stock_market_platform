@@ -23,6 +23,7 @@ class YahooFinanceStatementsSpider(CrawlSpider):
             v: k for k, v in get_source_statement_types_map().items()
         }
         urls = []
+        # TODO get one symbol for each request to insure the correct usage of multiple spiders
         unfetched_objects = get_unfetched_objects()
         for obj in unfetched_objects:
             for statement_type in ("financials", "balance-sheet", "cash-flow"):
