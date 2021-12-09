@@ -35,7 +35,7 @@ def update_ticker_status(symbol):
 
 
 def update_statement_type_availability(statement_type, symbol):
-    SQL = get_from_sql(f"query_statements/set_{statement_type}_availability.sql", symbol=symbol)
+    SQL = get_from_sql(f"query_statements/set_{statement_type}_statement_availability.sql", symbol=symbol)
     cursor.execute(SQL)
     connection.commit()
 

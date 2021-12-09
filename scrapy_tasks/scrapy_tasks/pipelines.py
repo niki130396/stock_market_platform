@@ -34,6 +34,7 @@ class FinancialStatementPipeline:
         item = dict(item)
 
         self.db[self.collection_name].insert(item)
+        print(1111111, item["metadata"]["statement_type"], item["metadata"]["symbol"])
         update_statement_type_availability(
             item["metadata"]["statement_type"],
             item["metadata"]["symbol"]

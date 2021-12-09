@@ -25,8 +25,7 @@ class YahooFinanceStatementsSpider(CrawlSpider):
         urls = []
         unfetched_objects = get_unfetched_objects()
         for obj in unfetched_objects:
-            # for statement_type in ("financials", "balance-sheet", "cash-flow"):
-            for statement_type in ("financials", "balance-sheet"):
+            for statement_type in ("financials", "balance-sheet", "cash-flow"):
                 urls.append(
                     (self.__build_url(obj.symbol, statement_type), statement_type, obj)
                 )
