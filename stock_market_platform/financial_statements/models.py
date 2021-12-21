@@ -17,3 +17,11 @@ class StatementsMetaData(models.Model):
     is_income_statement_available = models.BooleanField(default=False)
     is_balance_sheet_statement_available = models.BooleanField(default=False)
     is_cash_flow_statement_available = models.BooleanField(default=False)
+    is_processed = models.BooleanField(
+        default=False,
+        help_text="Signals if a symbol is currently being processed by a spider"
+    )
+    is_attempted = models.BooleanField(
+        default=False,
+        help_text="Signals if financial statements for a given symbol have been attempted to be downloaded"
+    )

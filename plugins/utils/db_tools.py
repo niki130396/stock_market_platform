@@ -28,6 +28,20 @@ def get_from_sql(rel_file_path: str, **kwargs):
         return SQL
 
 
+def get_next_unfetched_ticker():
+    SQL = get_from_sql("query_statements/select_next_ticker_for_processing.sql")
+    cursor.execute(SQL)
+    connection.commit()
+    output = []
+    for row in cursor.fetchall():
+        output.append(
+            DocumentModel(
+                id=row[0], symbol=row[1], name=row[2], sector=row[7], industry=row[8]
+            )
+        )
+    return output
+
+
 def update_ticker_status(symbol):
     SQL = get_from_sql("query_statements/update_ticker_is_available.sql", symbol=symbol)
     cursor.execute(SQL)

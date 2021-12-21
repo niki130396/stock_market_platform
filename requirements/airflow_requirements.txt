@@ -1,2 +1,2 @@
-pymongo
-scrapy
+pymongo==3.12.1
+scrapy==2.5.1

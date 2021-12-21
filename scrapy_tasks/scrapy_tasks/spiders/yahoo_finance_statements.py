@@ -6,12 +6,16 @@ from scrapy.spiders import CrawlSpider
 from scrapy_tasks.items import FinancialStatementItem
 
 sys.path.insert(0, f"{environ['AIRFLOW_HOME']}/plugins/")
-from utils.db_tools import NormalizedFieldsProcessor, get_unfetched_objects, get_source_statement_types_map  # noqa E402
+from utils.db_tools import NormalizedFieldsProcessor, get_next_unfetched_ticker, get_source_statement_types_map  # noqa E402
 from utils.models import DocumentModel  # noqa E402
 
 
 class YahooFinanceStatementsSpider(CrawlSpider):
     name = "yahoo_finance_statements_spider"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # self.empty = 0
 
     def __build_url(self, symbol, statement_type):
         return f"https://finance.yahoo.com/quote/{symbol}/{statement_type}?p={symbol}"
@@ -23,19 +27,19 @@ class YahooFinanceStatementsSpider(CrawlSpider):
             v: k for k, v in get_source_statement_types_map().items()
         }
         urls = []
-        # TODO get one symbol for each request to insure the correct usage of multiple spiders
-        unfetched_objects = get_unfetched_objects()
-        for obj in unfetched_objects:
-            for statement_type in ("financials", "balance-sheet", "cash-flow"):
-                urls.append(
-                    (self.__build_url(obj.symbol, statement_type), statement_type, obj)
+        while True:
+            unfetched_ticker = get_next_unfetched_ticker()
+            for obj in unfetched_ticker:
+                for statement_type in ("financials", "balance-sheet", "cash-flow"):
+                    urls.append(
+                        (self.__build_url(obj.symbol, statement_type), statement_type, obj)
+                    )
+            for url, statement_type, document in urls:
+                yield Request(
+                    url,
+                    callback=self.parse,
+                    meta={"statement_type": statement_type, "document": document},
                 )
-        for url, statement_type, document in urls:
-            yield Request(
-                url,
-                callback=self.parse,
-                meta={"statement_type": statement_type, "document": document},
-            )
 
     def parse(self, response, **kwargs):
         statement_type = response.meta.get("statement_type")

@@ -56,6 +56,7 @@
   <component name="DBNavigator.Project.FileConnectionMappingManager">
     <mapping file-url="file://$PROJECT_DIR$/plugins/utils/query_statements/normalized_fields.sql" connection-id="acffeb11-18cd-4c31-bbf3-dc47af9f6a31" session-id="MAIN" current-schema="information_schema" />
     <mapping file-url="file://$PROJECT_DIR$/plugins/utils/query_statements/set_income_statement_availability.sql" connection-id="acffeb11-18cd-4c31-bbf3-dc47af9f6a31" session-id="MAIN" current-schema="information_schema" />
+    <mapping file-url="file://$PROJECT_DIR$/plugins/utils/query_statements/select_next_ticker_for_processing.sql" connection-id="acffeb11-18cd-4c31-bbf3-dc47af9f6a31" session-id="MAIN" current-schema="information_schema" />
     <mapping file-url="file://$PROJECT_DIR$/plugins/utils/query_statements/set_balance_sheet_availability.sql" connection-id="acffeb11-18cd-4c31-bbf3-dc47af9f6a31" session-id="MAIN" current-schema="information_schema" />
     <mapping file-url="file://$PROJECT_DIR$/plugins/utils/query_statements/update_ticker_is_available.sql" connection-id="acffeb11-18cd-4c31-bbf3-dc47af9f6a31" session-id="MAIN" current-schema="information_schema" />
     <mapping file-url="file://$PROJECT_DIR$/plugins/utils/query_statements/set_cash_flow_availability.sql" connection-id="acffeb11-18cd-4c31-bbf3-dc47af9f6a31" session-id="MAIN" current-schema="information_schema" />
