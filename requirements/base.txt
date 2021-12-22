@@ -25,3 +25,5 @@ celery==4.4.6  # pyup: < 5.0,!=4.4.7  # https://github.com/celery/celery
 django-celery-beat==2.1.0  # https://github.com/celery/django-celery-beat
 flower==0.9.5  # https://github.com/mher/flower
 django-timezone-field==4.0 # workround https://github.com/pydanny/cookiecutter-django/issues/2950
+
+pymongo==3.12.1

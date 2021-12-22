@@ -308,3 +308,11 @@ REST_FRAMEWORK = {
 CORS_URLS_REGEX = r"^/api/.*$"
 # Your stuff...
 # ------------------------------------------------------------------------------
+
+MONGO_HOST = env.str("MONGO_HOST")
+MONGO_USERNAME = env.str("MONGO_USER")
+MONGO_PASSWORD = env.str("MONGO_PASSWORD")
+MONGO_DATABASE = env.str("MONGO_DB")
+MONGO_PORT = 27017
+
+MONGO_URI = f"mongodb://{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}"

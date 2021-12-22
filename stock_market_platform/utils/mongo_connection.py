@@ -1,20 +1,15 @@
-import os
-
+from django.conf import settings
 from pymongo import MongoClient
 
 
 class StockMarketDBConnector:
-    HOST = os.environ.get("MONGO_HOST")
-    USERNAME = os.environ.get("MONGO_USERNAME")
-    PASSWORD = os.environ.get("MONGO_PASSWORD")
-    PORT = 27017
-
     def __init__(self, collection):
-        self.client = MongoClient(
-            f"mongodb://{self.USERNAME}:{self.PASSWORD}@127.0.0.1:27017"
-        )
+        self.client = MongoClient(settings.MONGO_URI)
         self.db = self.client.stock_market
-        self.collection = eval(f"self.db.{collection}")
+        if hasattr(self.db, collection):
+            self.collection = getattr(self.db, collection)
+        else:
+            raise AttributeError("The requested collection does not exist in the stock_market database")
 
     def get_last_id(self):
         ids = [

@@ -7,3 +7,7 @@ class StatementsMetaDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = StatementsMetaData
         fields = "__all__"
+
+
+class BalanceSheetMetricsSerializer(serializers.Serializer):
+    pass
