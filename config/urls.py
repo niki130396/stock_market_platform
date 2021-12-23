@@ -5,6 +5,10 @@ from django.urls import include, path
 from django.views import defaults as default_views
 from django.views.generic import TemplateView
 from rest_framework.authtoken.views import obtain_auth_token
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+)
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
@@ -21,6 +25,8 @@ urlpatterns = [
 
 # API URLS
 urlpatterns += [
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     # API base url
     path("api/", include("config.api_router")),
     # DRF auth token

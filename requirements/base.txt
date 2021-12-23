@@ -27,3 +27,4 @@ flower==0.9.5  # https://github.com/mher/flower
 django-timezone-field==4.0 # workround https://github.com/pydanny/cookiecutter-django/issues/2950
 
 pymongo==3.12.1
+drf-spectacular==0.21.1
