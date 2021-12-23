@@ -64,4 +64,4 @@ class NormalizedFieldsAdmin(admin.ModelAdmin):
     list_display = ["name", "humanized_name", "statement_type"]
     ordering = ("statement_type", "name")
     search_fields = ("name",)
-    list_filter = ("statement_type", )
+    list_filter = ("statement_type",)

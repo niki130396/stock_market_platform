@@ -9,7 +9,9 @@ class StockMarketDBConnector:
         if hasattr(self.db, collection):
             self.collection = getattr(self.db, collection)
         else:
-            raise AttributeError("The requested collection does not exist in the stock_market database")
+            raise AttributeError(
+                "The requested collection does not exist in the stock_market database"
+            )
 
     def get_last_id(self):
         ids = [

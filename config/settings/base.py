@@ -307,9 +307,9 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Stock Market Platform API',
-    'DESCRIPTION': 'Your project description',
-    'VERSION': '1.0.0',
+    "TITLE": "Stock Market Platform API",
+    "DESCRIPTION": "Your project description",
+    "VERSION": "1.0.0",
 }
 
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup

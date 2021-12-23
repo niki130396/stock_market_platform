@@ -6,7 +6,11 @@ from scrapy.spiders import CrawlSpider
 from scrapy_tasks.items import FinancialStatementItem
 
 sys.path.insert(0, f"{environ['AIRFLOW_HOME']}/plugins/")
-from utils.db_tools import NormalizedFieldsProcessor, get_next_unfetched_ticker, get_source_statement_types_map  # noqa E402
+from utils.db_tools import (  # noqa E402
+    NormalizedFieldsProcessor,
+    get_next_unfetched_ticker,
+    get_source_statement_types_map,
+)
 from utils.models import DocumentModel  # noqa E402
 
 
@@ -32,7 +36,11 @@ class YahooFinanceStatementsSpider(CrawlSpider):
             for obj in unfetched_ticker:
                 for statement_type in ("financials", "balance-sheet", "cash-flow"):
                     urls.append(
-                        (self.__build_url(obj.symbol, statement_type), statement_type, obj)
+                        (
+                            self.__build_url(obj.symbol, statement_type),
+                            statement_type,
+                            obj,
+                        )
                     )
             for url, statement_type, document in urls:
                 yield Request(

@@ -5,7 +5,10 @@
 
 
 import pymongo
-from utils.db_tools import update_ticker_status, update_statement_type_availability  # noqa F402
+from utils.db_tools import (  # noqa F402
+    update_statement_type_availability,
+    update_ticker_status,
+)
 
 
 class FinancialStatementPipeline:
@@ -35,8 +38,7 @@ class FinancialStatementPipeline:
 
         self.db[self.collection_name].insert(item)
         update_statement_type_availability(
-            item["metadata"]["statement_type"],
-            item["metadata"]["symbol"]
+            item["metadata"]["statement_type"], item["metadata"]["symbol"]
         )
         update_ticker_status(item["metadata"]["symbol"])
         return item
