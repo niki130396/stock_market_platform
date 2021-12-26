@@ -8,8 +8,10 @@ from scrapy_tasks.items import FinancialStatementItem
 sys.path.insert(0, f"{environ['AIRFLOW_HOME']}/plugins/")
 from utils.db_tools import (  # noqa E402
     NormalizedFieldsProcessor,
+    get_company_id,
     get_next_unfetched_ticker,
     get_source_statement_types_map,
+    map_normalized_field_to_field_id,
 )
 from utils.models import DocumentModel  # noqa E402
 
@@ -19,30 +21,29 @@ class YahooFinanceStatementsSpider(CrawlSpider):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # self.empty = 0
+        self.source_name = "yahoo_finance"
 
     def __build_url(self, symbol, statement_type):
         return f"https://finance.yahoo.com/quote/{symbol}/{statement_type}?p={symbol}"
 
     def start_requests(self):
-        fields_processor = NormalizedFieldsProcessor("yahoo_finance")
+        fields_processor = NormalizedFieldsProcessor(self.source_name)
         self.normalized_fields = fields_processor.mapped_source_fields
         self.local_statement_types = {
             v: k for k, v in get_source_statement_types_map().items()
         }
-        urls = []
-        while True:
-            unfetched_ticker = get_next_unfetched_ticker()
-            for obj in unfetched_ticker:
-                for statement_type in ("financials", "balance-sheet", "cash-flow"):
-                    urls.append(
-                        (
-                            self.__build_url(obj.symbol, statement_type),
-                            statement_type,
-                            obj,
-                        )
-                    )
+        self.normalized_field_to_field_id_map = map_normalized_field_to_field_id(
+            self.source_name
+        )
+
+        for obj in get_next_unfetched_ticker():
+            urls = []
+            for statement_type in ("financials", "balance-sheet", "cash-flow"):
+                urls.append(
+                    (self.__build_url(obj.symbol, statement_type), statement_type, obj)
+                )
             for url, statement_type, document in urls:
+                self.company_id = get_company_id(document.symbol)
                 yield Request(
                     url,
                     callback=self.parse,

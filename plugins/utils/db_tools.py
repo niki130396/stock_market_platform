@@ -3,14 +3,15 @@ from collections import defaultdict
 
 import psycopg2
 from jinja2 import Template
+from psycopg2.extras import execute_values
 from utils.models import DocumentModel
 
 connection_kwargs = {
-    "user": "vYFyCTEJOyYWibhYuVxlnvezFuDHwGXI",
-    "password": "tD8Fpalp5GviRKn8zbBc0GdCIRWxynoqChkm4NaEG7g42lJgypqC1Iw8X7l6zAv5",
-    "host": "postgres",
-    "port": 5432,
-    "database": "stock_market_platform",
+    "user": os.environ.get("POSTGRES_USER"),
+    "password": os.environ.get("POSTGRES_PASSWORD"),
+    "host": os.environ.get("POSTGRES_HOST"),
+    "port": os.environ.get("POSTGRES_PORT"),
+    "database": os.environ.get("POSTGRES_DB"),
 }
 
 connection = psycopg2.connect(**connection_kwargs)
@@ -28,18 +29,35 @@ def get_from_sql(rel_file_path: str, **kwargs):
         return SQL
 
 
+def insert_financial_statement_item(item, spider):
+    to_insert = []
+    data = item.pop("data")
+    for statement_data in data:
+        period = statement_data.pop("period")
+        for line, value in statement_data.items():
+            if value:
+                to_insert.append(
+                    (
+                        spider.company_id,
+                        spider.normalized_field_to_field_id_map[line],
+                        period,
+                        int(value.replace(",", "")),
+                    )
+                )
+    SQL = get_from_sql("query_statements/insert_financial_statement_fact.sql")
+    execute_values(cursor, SQL, to_insert)
+    connection.commit()
+
+
 def get_next_unfetched_ticker():
     SQL = get_from_sql("query_statements/select_next_ticker_for_processing.sql")
-    cursor.execute(SQL)
-    connection.commit()
-    output = []
-    for row in cursor.fetchall():
-        output.append(
-            DocumentModel(
-                id=row[0], symbol=row[1], name=row[2], sector=row[7], industry=row[8]
-            )
+    while True:
+        cursor.execute(SQL)
+        connection.commit()
+        row = cursor.fetchone()
+        yield DocumentModel(
+            id=row[0], symbol=row[1], name=row[2], sector=row[7], industry=row[8]
         )
-    return output
 
 
 def update_ticker_status(symbol):
@@ -77,6 +95,24 @@ def get_source_statement_types_map():
     for row in cursor.fetchall():
         statements_map[row[1]] = row[0]
     return statements_map
+
+
+def map_normalized_field_to_field_id(source_name):
+    output = {}
+    cursor.execute(
+        get_from_sql(
+            "query_statements/normalized_field_to_field_id.sql", source_name=source_name
+        )
+    )
+    normalized_fields = list(cursor.fetchall())
+    for field_name, field_id in normalized_fields:
+        output[field_name] = field_id
+    return output
+
+
+def get_company_id(symbol):
+    cursor.execute(get_from_sql("query_statements/company_id.sql", symbol=symbol))
+    return cursor.fetchone()[-1]
 
 
 class NormalizedFieldsProcessor:

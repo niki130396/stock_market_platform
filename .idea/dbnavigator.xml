@@ -28,7 +28,7 @@
       <connection connection-id="acffeb11-18cd-4c31-bbf3-dc47af9f6a31">
         <schema name="information_schema" object-types="table, view, function" />
         <schema name="pg_catalog" object-types="table, view, function" />
-        <schema name="public" object-types="table, view, function, column" />
+        <schema name="public" object-types="table, view, sequence, function, column" />
       </connection>
     </loaded-nodes>
   </component>
@@ -98,7 +98,7 @@
           <driver value="" />
           <url-type value="DATABASE" />
           <host value="localhost" />
-          <port value="5433" />
+          <port value="5432" />
           <database value="stock_market_platform" />
           <type value="USER_PASSWORD" />
           <user value="vYFyCTEJOyYWibhYuVxlnvezFuDHwGXI" />

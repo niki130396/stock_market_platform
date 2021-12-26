@@ -88,6 +88,7 @@ services:
     env_file:
       - ./.envs/.local/.mongo
       - ./.envs/.local/.alpha_vantage
+      - ./.envs/.local/.postgres
 
   airflow-scheduler:
     <<: *airflow-common
@@ -96,6 +97,7 @@ services:
     env_file:
       - ./.envs/.local/.mongo
       - ./.envs/.local/.alpha_vantage
+      - ./.envs/.local/.postgres
 
   airflow-worker:
     <<: *airflow-common
@@ -104,6 +106,7 @@ services:
     env_file:
       - ./.envs/.local/.mongo
       - ./.envs/.local/.alpha_vantage
+      - ./.envs/.local/.postgres
 
   airflow-init:
     <<: *airflow-common
@@ -111,6 +114,8 @@ services:
     env_file:
       - ./.envs/.local/.mongo
       - ./.envs/.local/.alpha_vantage
+      - ./.envs/.local/.postgres
+
     environment:
       <<: *airflow-common-env
       _AIRFLOW_DB_UPGRADE: 'true'

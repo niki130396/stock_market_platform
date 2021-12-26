@@ -32,31 +32,19 @@ class FinancialStatementGenericInline:
         return field
 
 
-class IncomeStatementFieldsInline(FinancialStatementGenericInline, admin.TabularInline):
-    model = models.IncomeStatementField
-
-
-class BalanceSheetFieldsInline(FinancialStatementGenericInline, admin.TabularInline):
-    model = models.BalanceSheetField
-
-
-class CashFlowFieldsInline(FinancialStatementGenericInline, admin.TabularInline):
-    model = models.CashFlowField
-
-
 class StatementTypeSourceDefinitionInline(admin.TabularInline):
     model = models.StatementTypeSourceDefinition
     extra = 0
 
 
+class FinancialStatementFieldAdminInline(admin.TabularInline):
+    model = models.FinancialStatementLine
+    extra = 0
+
+
 @admin.register(models.CrawlingSourceDetails)
 class CrawlingSourceDetailsAdmin(admin.ModelAdmin):
-    inlines = [
-        IncomeStatementFieldsInline,
-        BalanceSheetFieldsInline,
-        CashFlowFieldsInline,
-        StatementTypeSourceDefinitionInline,
-    ]
+    inlines = [FinancialStatementFieldAdminInline]
 
 
 @admin.register(models.NormalizedField)
