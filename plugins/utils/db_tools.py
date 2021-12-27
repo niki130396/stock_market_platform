@@ -4,6 +4,7 @@ from collections import defaultdict
 import psycopg2
 from jinja2 import Template
 from psycopg2.extras import execute_values
+from utils.common import parse_numeric_string
 from utils.models import DocumentModel
 
 connection_kwargs = {
@@ -31,9 +32,9 @@ def get_from_sql(rel_file_path: str, **kwargs):
 
 def insert_financial_statement_item(item, spider):
     to_insert = []
-    data = item.pop("data")
+    data = item["data"]
     for statement_data in data:
-        period = statement_data.pop("period")
+        period = statement_data["period"]
         for line, value in statement_data.items():
             if value:
                 to_insert.append(
@@ -41,7 +42,7 @@ def insert_financial_statement_item(item, spider):
                         spider.company_id,
                         spider.normalized_field_to_field_id_map[line],
                         period,
-                        int(value.replace(",", "")),
+                        parse_numeric_string(value),
                     )
                 )
     SQL = get_from_sql("query_statements/insert_financial_statement_fact.sql")
