@@ -34,7 +34,7 @@ def insert_financial_statement_item(item, spider):
     to_insert = []
     data = item["data"]
     for statement_data in data:
-        period = statement_data["period"]
+        period = statement_data.pop("period")
         for line, value in statement_data.items():
             if value:
                 to_insert.append(
