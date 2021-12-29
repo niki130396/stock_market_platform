@@ -17,7 +17,7 @@ from utils.db_tools import (  # noqa E402
 from utils.models import DocumentModel  # noqa E402
 
 
-# TODO might have to use selenium to get collapse items from statements
+# TODO might have to use splash and scrapy-splash to get collapse items from statements
 class YahooFinanceStatementsSpider(CrawlSpider):
     name = "yahoo_finance_statements_spider"
 
