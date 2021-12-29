@@ -91,15 +91,6 @@ ITEM_PIPELINES = {
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 
-# MONGO_HOST = environ["MONGO_HOST"]
-# MONGO_DB = environ["MONGO_DB"]
-# MONGO_USER = environ["MONGO_USER"]
-# MONGO_PASSWORD = environ["MONGO_PASSWORD"]
-# MONGO_PORT = environ["MONGO_PORT"]
-#
-# MONGO_URI = f"mongodb://{MONGO_USER}:{MONGO_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}"
-# MONGO_DB_NAME = "stock_market"
-
 POSTGRES_HOST = environ["POSTGRES_HOST"]
 POSTGRES_PORT = environ["POSTGRES_PORT"]
 POSTGRES_DB = environ["POSTGRES_DB"]

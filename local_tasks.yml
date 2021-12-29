@@ -29,7 +29,6 @@ x-airflow-common:
   depends_on:
     - redis
     - postgres
-    - mongo
 
 services:
 
@@ -48,17 +47,17 @@ services:
     - "5433:5432"
     restart: always
 
-  mongo:
-    image: mongo
-    restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root_password
-    volumes:
-    - ./mongo-volume:/data/db
-    ports:
-    - "27018:27017"
-    container_name: stock_market_tasks_mongo
+#  mongo:
+#    image: mongo
+#    restart: always
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: root
+#      MONGO_INITDB_ROOT_PASSWORD: root_password
+#    volumes:
+#    - ./mongo-volume:/data/db
+#    ports:
+#    - "27018:27017"
+#    container_name: stock_market_tasks_mongo
 
 #  mongo-express:
 #    image: mongo-express

@@ -14,7 +14,6 @@ services:
     container_name: stock_market_django
     depends_on:
       - postgres
-      - mongo
     volumes:
       - .:/app:z
     env_file:
@@ -59,17 +58,17 @@ services:
       - "7000:7000"
     command: /start-docs
 
-  mongo:
-    image: mongo
-    restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root_password
-    volumes:
-    - ./mongo-volume:/data/db
-    ports:
-    - "27017:27017"
-    container_name: mongo
+#  mongo:
+#    image: mongo
+#    restart: always
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: root
+#      MONGO_INITDB_ROOT_PASSWORD: root_password
+#    volumes:
+#    - ./mongo-volume:/data/db
+#    ports:
+#    - "27017:27017"
+#    container_name: mongo
 
 #  mongo-express:
 #    image: mongo-express

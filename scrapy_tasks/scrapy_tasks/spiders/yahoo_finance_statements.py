@@ -1,4 +1,5 @@
 import sys
+from collections import deque
 from os import environ
 
 from scrapy import Request
@@ -16,6 +17,7 @@ from utils.db_tools import (  # noqa E402
 from utils.models import DocumentModel  # noqa E402
 
 
+# TODO might have to use selenium to get collapse items from statements
 class YahooFinanceStatementsSpider(CrawlSpider):
     name = "yahoo_finance_statements_spider"
 
@@ -35,15 +37,17 @@ class YahooFinanceStatementsSpider(CrawlSpider):
         self.normalized_field_to_field_id_map = map_normalized_field_to_field_id(
             self.source_name
         )
+        self.company_id_queue = deque()
 
         for obj in get_next_unfetched_ticker():
+            company_id = get_company_id(obj.symbol)
             urls = []
             for statement_type in ("financials", "balance-sheet", "cash-flow"):
                 urls.append(
                     (self.__build_url(obj.symbol, statement_type), statement_type, obj)
                 )
+                self.company_id_queue.append(company_id)
             for url, statement_type, document in urls:
-                self.company_id = get_company_id(document.symbol)
                 yield Request(
                     url,
                     callback=self.parse,

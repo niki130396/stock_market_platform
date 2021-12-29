@@ -28,3 +28,4 @@ django-timezone-field==4.0 # workround https://github.com/pydanny/cookiecutter-d
 
 pymongo==3.12.1
 drf-spectacular==0.21.1
+Jinja2==2.11.3

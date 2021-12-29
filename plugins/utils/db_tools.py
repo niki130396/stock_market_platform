@@ -16,6 +16,7 @@ connection_kwargs = {
 }
 
 connection = psycopg2.connect(**connection_kwargs)
+connection.set_session(autocommit=True)
 cursor = connection.cursor()
 
 
@@ -32,6 +33,7 @@ def get_from_sql(rel_file_path: str, **kwargs):
 
 def insert_financial_statement_item(item, spider):
     to_insert = []
+    company_id = spider.company_id_queue.popleft()
     data = item["data"]
     for statement_data in data:
         period = statement_data.pop("period")
@@ -39,7 +41,7 @@ def insert_financial_statement_item(item, spider):
             if value:
                 to_insert.append(
                     (
-                        spider.company_id,
+                        company_id,
                         spider.normalized_field_to_field_id_map[line],
                         period,
                         parse_numeric_string(value),
@@ -47,14 +49,12 @@ def insert_financial_statement_item(item, spider):
                 )
     SQL = get_from_sql("query_statements/insert_financial_statement_fact.sql")
     execute_values(cursor, SQL, to_insert)
-    connection.commit()
 
 
 def get_next_unfetched_ticker():
     SQL = get_from_sql("query_statements/select_next_ticker_for_processing.sql")
     while True:
         cursor.execute(SQL)
-        connection.commit()
         row = cursor.fetchone()
         yield DocumentModel(
             id=row[0], symbol=row[1], name=row[2], sector=row[7], industry=row[8]
@@ -64,7 +64,6 @@ def get_next_unfetched_ticker():
 def update_ticker_status(symbol):
     SQL = get_from_sql("query_statements/update_ticker_is_available.sql", symbol=symbol)
     cursor.execute(SQL)
-    connection.commit()
 
 
 def update_statement_type_availability(statement_type, symbol):
@@ -72,7 +71,6 @@ def update_statement_type_availability(statement_type, symbol):
         f"query_statements/set_{statement_type}_availability.sql", symbol=symbol
     )
     cursor.execute(SQL)
-    connection.commit()
 
 
 def get_unfetched_objects():
