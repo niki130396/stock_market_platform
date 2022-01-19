@@ -119,6 +119,7 @@ class NormalizedFieldsProcessor:
         self.__source_name = source_name
         self.__statement_types_map = get_source_statement_types_map()
         self.__mapped_fields = self.fetch_source_and_normalized_field_names()
+        self.__field_sets = {k: set(v.keys()) for k, v in self.__mapped_fields.items()}
 
     def fetch_fields(self):
         output = defaultdict(dict)
@@ -143,3 +144,9 @@ class NormalizedFieldsProcessor:
     @property
     def mapped_source_fields(self):
         return self.__mapped_fields
+
+    def extract_statement_type(self, statement_data: list):
+        field_names = [line[0] for line in statement_data]
+        for statement_type, source_fields in self.__field_sets.items():
+            if source_fields.intersection(field_names):
+                return statement_type
