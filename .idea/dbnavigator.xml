@@ -24,11 +24,7 @@
     <autoscroll-to-editor value="false" />
     <autoscroll-from-editor value="true" />
     <show-object-properties value="true" />
-    <loaded-nodes>
-      <connection connection-id="acffeb11-18cd-4c31-bbf3-dc47af9f6a31">
-        <schema name="public" object-types="table, view, sequence, function, constraint, index, column, dataset trigger" />
-      </connection>
-    </loaded-nodes>
+    <loaded-nodes />
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="acffeb11-18cd-4c31-bbf3-dc47af9f6a31">
@@ -85,7 +81,7 @@
   </component>
   <component name="DBNavigator.Project.Settings">
     <connections>
-      <connection id="acffeb11-18cd-4c31-bbf3-dc47af9f6a31" active="true">
+      <connection id="acffeb11-18cd-4c31-bbf3-dc47af9f6a31" active="true" signed="true">
         <database>
           <name value="stock_market_platform" />
           <description value="" />
@@ -169,7 +165,7 @@
           <object-name-filters />
         </object-filters>
       </connection>
-      <connection id="15f41d5d-17b2-4056-bdf3-140411b50102" active="true">
+      <connection id="15f41d5d-17b2-4056-bdf3-140411b50102" active="true" signed="true">
         <database>
           <name value="other_machine" />
           <description value="" />
