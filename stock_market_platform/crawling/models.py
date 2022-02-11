@@ -4,25 +4,6 @@ from mptt.models import MPTTModel, TreeForeignKey
 from stock_market_platform.financial_statements.models import StatementsMetaData
 
 
-class NormalizedField(models.Model):
-    STATEMENT_TYPE_CHOICES = [
-        ("income_statement", "Income Statement"),
-        ("balance_sheet", "Balance Sheet"),
-        ("cash_flow", "Cash Flow"),
-        ("other", "Other"),
-    ]
-
-    field_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=256)
-    humanized_name = models.CharField(max_length=256, null=True, blank=True)
-    statement_type = models.CharField(
-        max_length=256, choices=STATEMENT_TYPE_CHOICES, default="income_statement"
-    )
-
-    def __str__(self):
-        return self.humanized_name
-
-
 class NormalizedFieldTree(MPTTModel):
     STATEMENT_TYPE_CHOICES = [
         ("income_statement", "Income Statement"),
