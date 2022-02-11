@@ -78,15 +78,15 @@ services:
     ports:
       - "6380:6379"
     restart: always
-
-  selenium:
-    image: selenium/standalone-chrome
-    container_name: stock_market_tasks_selenium
-    ports:
-      - "4444:4444"
-    privileged: true
-    shm_size: 2g
-    hostname: stock_market_selenium
+#
+#  selenium:
+#    image: selenium/standalone-chrome
+#    container_name: stock_market_tasks_selenium
+#    ports:
+#      - "4444:4444"
+#    privileged: true
+#    shm_size: 2g
+#    hostname: stock_market_selenium
 
   airflow-webserver:
     <<: *airflow-common

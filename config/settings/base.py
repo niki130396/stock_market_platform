@@ -73,6 +73,7 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "django_celery_beat",
     "drf_spectacular",
+    "mptt",
 ]
 
 LOCAL_APPS = [

@@ -6,8 +6,10 @@ from django_celery_beat.models import (
     PeriodicTask,
     SolarSchedule,
 )
+from mptt.admin import MPTTModelAdmin
 
 from stock_market_platform.crawling import models
+from stock_market_platform.crawling.forms import NormalizedFieldTreeForm
 
 # Register your models here.
 
@@ -44,12 +46,12 @@ class FinancialStatementFieldAdminInline(admin.TabularInline):
 
 @admin.register(models.CrawlingSourceDetails)
 class CrawlingSourceDetailsAdmin(admin.ModelAdmin):
-    inlines = [FinancialStatementFieldAdminInline]
+    inlines = [FinancialStatementFieldAdminInline, StatementTypeSourceDefinitionInline]
 
 
-@admin.register(models.NormalizedField)
-class NormalizedFieldsAdmin(admin.ModelAdmin):
-    list_display = ["name", "humanized_name", "statement_type"]
-    ordering = ("statement_type", "name")
-    search_fields = ("name",)
+@admin.register(models.NormalizedFieldTree)
+class NormalizedFieldTreeAdmin(MPTTModelAdmin):
+    list_display = ("name", "humanized_name", "statement_type")
+    search_fields = ("humanized_name",)
     list_filter = ("statement_type",)
+    form = NormalizedFieldTreeForm
