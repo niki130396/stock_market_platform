@@ -20,25 +20,6 @@ admin.site.unregister(IntervalSchedule)
 admin.site.unregister(SolarSchedule)
 
 
-class FinancialStatementGenericInline:
-    fields = ["name", "crawling_source", "normalized_field"]
-    extra = 0
-
-    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-        field = super().formfield_for_foreignkey(db_field, request, **kwargs)
-        if db_field.name == "normalized_field":
-            statement_type = db_field.model.get_statement_type()
-            field.queryset = field.queryset.filter(
-                statement_type__in=(statement_type, "other")
-            )
-        return field
-
-
-class StatementTypeSourceDefinitionInline(admin.TabularInline):
-    model = models.StatementTypeSourceDefinition
-    extra = 0
-
-
 class FinancialStatementFieldAdminInline(admin.TabularInline):
     model = models.FinancialStatementLine
     extra = 0
@@ -46,7 +27,9 @@ class FinancialStatementFieldAdminInline(admin.TabularInline):
 
 @admin.register(models.CrawlingSourceDetails)
 class CrawlingSourceDetailsAdmin(admin.ModelAdmin):
-    inlines = [FinancialStatementFieldAdminInline, StatementTypeSourceDefinitionInline]
+    inlines = [
+        FinancialStatementFieldAdminInline,
+    ]
 
 
 @admin.register(models.NormalizedFieldTree)

@@ -49,26 +49,12 @@ class StatementTypeLocalDefinition(models.Model):
         return self.statement_type_local_name
 
 
-class StatementTypeSourceDefinition(models.Model):
-    statement_type_definition_id = models.AutoField(primary_key=True)
-    statement_type_name_from_source = models.CharField(max_length=256)
-    local_statement_type = models.ForeignKey(
-        StatementTypeLocalDefinition, on_delete=models.PROTECT, null=True, blank=True
-    )
-    crawling_source = models.ForeignKey(
-        CrawlingSourceDetails, on_delete=models.CASCADE, null=True, blank=True
-    )
-
-    def __str__(self):
-        return self.statement_type_name_from_source
-
-
 class FinancialStatementLine(models.Model):
     field_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=256)
     description = models.CharField(max_length=256, null=True, blank=True)
-    source_statement_type = models.ForeignKey(
-        StatementTypeSourceDefinition, on_delete=models.PROTECT
+    statement_type = models.ForeignKey(
+        StatementTypeLocalDefinition, on_delete=models.DO_NOTHING, default=1
     )
     crawling_source = models.ForeignKey(CrawlingSourceDetails, on_delete=models.CASCADE)
     normalized_field = TreeForeignKey(NormalizedFieldTree, on_delete=models.PROTECT)
