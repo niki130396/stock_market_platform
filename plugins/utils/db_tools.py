@@ -117,36 +117,28 @@ def get_company_id(symbol):
 class NormalizedFieldsProcessor:
     def __init__(self, source_name):
         self.__source_name = source_name
-        self.__statement_types_map = get_source_statement_types_map()
         self.__mapped_fields = self.fetch_source_and_normalized_field_names()
-        self.__field_sets = {k: set(v.keys()) for k, v in self.__mapped_fields.items()}
 
-    def fetch_fields(self):
+    @staticmethod
+    def fetch_fields():
         output = defaultdict(dict)
         for fields in cursor.fetchall():
             source_field_name, local_field_name, local_statement_type_name = fields
-            output[self.__statement_types_map[local_statement_type_name]][
-                source_field_name
-            ] = local_field_name
+            output[local_statement_type_name].update(
+                {source_field_name: local_field_name}
+            )
         return output
 
     def fetch_source_and_normalized_field_names(self):
         output = {}
         cursor.execute(
             get_from_sql(
-                "query_statements/normalized_fields.sql",
+                "normalized_fields.sql",
                 source_name=self.__source_name,
             )
         )
         output.update(self.fetch_fields())
         return output
 
-    @property
-    def mapped_source_fields(self):
-        return self.__mapped_fields
-
-    def extract_statement_type(self, statement_data: list):
-        field_names = [line[0] for line in statement_data]
-        for statement_type, source_fields in self.__field_sets.items():
-            if source_fields.intersection(field_names):
-                return statement_type
+    def get_local_field(self, statement_type: str, source_field: str):
+        return self.__mapped_fields[statement_type][source_field]

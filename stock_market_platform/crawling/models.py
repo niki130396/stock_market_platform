@@ -23,7 +23,7 @@ class NormalizedFieldTree(MPTTModel):
     )
 
     def __str__(self):
-        return self.humanized_name
+        return f"{self.humanized_name} - {self.statement_type}"
 
     class Meta:
         unique_together = ("name", "statement_type")
