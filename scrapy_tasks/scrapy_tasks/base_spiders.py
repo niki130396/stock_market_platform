@@ -28,3 +28,7 @@ class FinancialStatementCrawlSpider(CrawlSpider):
             )
 
         self.normalized_field_processor = NormalizedFieldsProcessor(self.source_name)
+
+    def build_url(self, symbol, statement_type):
+        raise NotImplemented("Implement this method")
+

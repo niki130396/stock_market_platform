@@ -29,10 +29,6 @@ class StockAnalysisSpider(CrawlSpider):
 
     def start_requests(self):
         fields_processor = NormalizedFieldsProcessor(self.source_name)
-        self.normalized_fields = fields_processor.mapped_source_fields
-        self.local_statement_types = {
-            v: k for k, v in get_source_statement_types_map().items()
-        }
 
         for obj in get_next_unfetched_ticker():
 
