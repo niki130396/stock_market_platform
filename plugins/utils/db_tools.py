@@ -127,13 +127,16 @@ class NormalizedFieldsProcessor:
             output[local_statement_type_name].update(
                 {source_field_name: local_field_name}
             )
+        if not output:
+            raise psycopg2.DataError("Either the source name is wrong or there are no associated field attributes"
+                                     "to the given source name")
         return output
 
     def fetch_source_and_normalized_field_names(self):
         output = {}
         cursor.execute(
             get_from_sql(
-                "normalized_fields.sql",
+                "query_statements/normalized_fields.sql",
                 source_name=self.__source_name,
             )
         )
