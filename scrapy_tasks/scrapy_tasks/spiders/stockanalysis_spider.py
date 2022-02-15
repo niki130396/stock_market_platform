@@ -3,6 +3,7 @@ from os import environ
 
 from scrapy.http import Request
 from scrapy.spiders import CrawlSpider
+from scrapy_tasks.base_spiders import FinancialStatementCrawlSpider  # noqa F401
 
 sys.path.insert(0, f"{environ['AIRFLOW_HOME']}/plugins/")
 from utils.db_tools import (  # noqa E402
@@ -28,7 +29,7 @@ class StockAnalysisSpider(CrawlSpider):
         return url
 
     def start_requests(self):
-        fields_processor = NormalizedFieldsProcessor(self.source_name)
+        fields_processor = NormalizedFieldsProcessor(self.source_name)  # noqa F841
 
         for obj in get_next_unfetched_ticker():
 
