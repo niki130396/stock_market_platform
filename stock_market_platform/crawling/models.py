@@ -54,10 +54,12 @@ class FinancialStatementLine(models.Model):
     name = models.CharField(max_length=256)
     description = models.CharField(max_length=256, null=True, blank=True)
     statement_type = models.ForeignKey(
-        StatementTypeLocalDefinition, on_delete=models.DO_NOTHING, default=1
+        StatementTypeLocalDefinition, on_delete=models.DO_NOTHING, blank=True
     )
     crawling_source = models.ForeignKey(CrawlingSourceDetails, on_delete=models.CASCADE)
-    normalized_field = TreeForeignKey(NormalizedFieldTree, on_delete=models.PROTECT)
+    normalized_field = TreeForeignKey(
+        NormalizedFieldTree, on_delete=models.PROTECT, blank=True, null=True
+    )
 
 
 class FinancialStatementFact(models.Model):
