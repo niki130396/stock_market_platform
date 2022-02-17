@@ -146,4 +146,5 @@ class NormalizedFieldsProcessor:
         return output
 
     def get_local_field(self, statement_type: str, source_field: str):
-        return self.__mapped_fields[statement_type][source_field]
+        if source_field in self.__mapped_fields[statement_type]:
+            return self.__mapped_fields[statement_type][source_field]
