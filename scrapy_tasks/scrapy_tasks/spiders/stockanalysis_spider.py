@@ -22,7 +22,8 @@ class StockAnalysisSpider(FinancialStatementCrawlSpider):
     balance_sheet_statement_source_definition = ("balance-sheet", "balance_sheet")
     cash_flow_statement_source_definition = ("cash-flow-statement", "cash_flow")
 
-    def build_url(self, symbol: str, statement_type: str):
+    @staticmethod
+    def build_url(symbol: str, statement_type: str):
         url = f"https://stockanalysis.com/stocks/{symbol.lower()}/financials/"
         if statement_type:
             url += statement_type + "/"
@@ -48,15 +49,14 @@ class StockAnalysisSpider(FinancialStatementCrawlSpider):
         document = response.meta.get("document")  # noqa F841
         local_statement_type = response.meta.get("statement_type")
 
-        rows = self.get_rows(response)
+        rows = self.get_rows(response, local_statement_type)
 
-        normalized_rows = self.normalize_fields(rows, local_statement_type)
         item = FinancialStatementItem()
         item["metadata"] = response.meta.get("document")
-        item["data"] = normalized_rows
+        item["data"] = rows
         yield item
 
-    def get_rows(self, response):
+    def get_rows(self, response, statement_type):
         years = self.get_years(response)
         parsed_rows = [years]
         table = response.xpath("//tbody//tr")
@@ -65,9 +65,29 @@ class StockAnalysisSpider(FinancialStatementCrawlSpider):
             for row in table:
                 elements = row.xpath("./td")
                 row_values = []
-                for el in elements:
+                row_name = elements[0].xpath(".//span/text()[1]").get()
+
+                normalized_row_name = self.normalized_field_processor.get_local_field(
+                    statement_type, row_name
+                )
+                if not normalized_row_name:
+                    continue
+
+                row_values.append(normalized_row_name)
+                for el in elements[1:]:
                     value = el.xpath(".//span/text()[1]").get()
                     row_values.append(value)
+
+                self.logger.warning(row_values)
+                while (
+                    row_values[-1] is None
+                    or not row_values[-1]
+                    .replace(".", "", 1)
+                    .replace("-", "", 1)
+                    .isdigit()
+                ):
+                    row_values.pop()
+
                 parsed_rows.append(row_values)
 
         return parsed_rows
@@ -87,11 +107,3 @@ class StockAnalysisSpider(FinancialStatementCrawlSpider):
                 if value:
                     output.append(value)
         return output
-
-    def normalize_fields(self, rows, statement_type):
-        for row in rows[1:]:
-            normalized_field = self.normalized_field_processor.get_local_field(
-                statement_type, row[0]
-            )
-            row[0] = normalized_field
-        return rows
