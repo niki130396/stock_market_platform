@@ -13,10 +13,10 @@ from utils.db_tools import (  # noqa F402
 class FinancialStatementPipeline:
     def process_item(self, item, spider):
         item = dict(item)
-        # if item["data"]:
-        #     insert_financial_statement_item(item, spider)
-        #     update_statement_type_availability(
-        #         item["metadata"]["statement_type"], item["metadata"]["symbol"]
-        #     )
-        #     update_ticker_status(item["metadata"]["symbol"])
+        if item["data"]:
+            insert_financial_statement_item(item["data"])
+            update_statement_type_availability(
+                item["metadata"]["statement_type"], item["metadata"]["symbol"]
+            )
+            update_ticker_status(item["metadata"]["symbol"])
         return item
