@@ -88,6 +88,8 @@ ITEM_PIPELINES = {
 # HTTPCACHE_IGNORE_HTTP_CODES = []
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
+DOWNLOADER_MIDDLEWARES = {"scrapy.downloadermiddlewares.retry.RetryMiddleware": None}
+
 
 POSTGRES_HOST = environ["POSTGRES_HOST"]
 POSTGRES_PORT = environ["POSTGRES_PORT"]
