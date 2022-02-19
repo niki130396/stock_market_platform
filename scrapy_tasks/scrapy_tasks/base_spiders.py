@@ -4,13 +4,7 @@ from os import environ
 from scrapy.spiders import CrawlSpider
 
 sys.path.insert(0, f"{environ['AIRFLOW_HOME']}/plugins/")
-from utils.db_tools import (  # noqa E402
-    NormalizedFieldsProcessor,
-    get_company_id,
-    get_next_unfetched_ticker,
-    get_source_statement_types_map,
-    map_normalized_field_to_field_id,
-)
+from utils.db_tools import NormalizedFieldsProcessor  # noqa E402
 
 
 class FinancialStatementCrawlSpider(CrawlSpider):
@@ -30,5 +24,4 @@ class FinancialStatementCrawlSpider(CrawlSpider):
         self.normalized_field_processor = NormalizedFieldsProcessor(self.source_name)
 
     def build_url(self, symbol, statement_type):
-        raise NotImplemented("Implement this method")
-
+        raise NotImplementedError("Implement this method")
