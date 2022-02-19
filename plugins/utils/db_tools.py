@@ -4,7 +4,6 @@ from collections import defaultdict
 import psycopg2
 from jinja2 import Template
 from psycopg2.extras import execute_values
-from utils.common import parse_numeric_string
 from utils.models import DocumentModel
 
 connection_kwargs = {
@@ -31,24 +30,9 @@ def get_from_sql(rel_file_path: str, **kwargs):
         return SQL
 
 
-def insert_financial_statement_item(item, spider):
-    to_insert = []
-    company_id = spider.company_id_queue.popleft()
-    data = item["data"]
-    for statement_data in data:
-        period = statement_data.pop("period")
-        for line, value in statement_data.items():
-            if value:
-                to_insert.append(
-                    (
-                        company_id,
-                        spider.normalized_field_to_field_id_map[line],
-                        period,
-                        parse_numeric_string(value),
-                    )
-                )
+def insert_financial_statement_item(data):
     SQL = get_from_sql("query_statements/insert_financial_statement_fact.sql")
-    execute_values(cursor, SQL, to_insert)
+    execute_values(cursor, SQL, data)
 
 
 def get_next_unfetched_ticker():
@@ -96,28 +80,11 @@ def get_source_statement_types_map():
     return statements_map
 
 
-def map_normalized_field_to_field_id(source_name):
-    output = {}
-    cursor.execute(
-        get_from_sql(
-            "query_statements/normalized_field_to_field_id.sql", source_name=source_name
-        )
-    )
-    normalized_fields = list(cursor.fetchall())
-    for field_name, field_id in normalized_fields:
-        output[field_name] = field_id
-    return output
-
-
-def get_company_id(symbol):
-    cursor.execute(get_from_sql("query_statements/company_id.sql", symbol=symbol))
-    return cursor.fetchone()[-1]
-
-
 class NormalizedFieldsProcessor:
     def __init__(self, source_name):
         self.__source_name = source_name
         self.__mapped_fields = self.fetch_source_and_normalized_field_names()
+        self.__mapped_normalized_field_ids = self.fetch_normalized_field_to_field_id()
 
     @staticmethod
     def fetch_fields():
@@ -145,6 +112,23 @@ class NormalizedFieldsProcessor:
         output.update(self.fetch_fields())
         return output
 
+    def fetch_normalized_field_to_field_id(self):
+        output = {}
+        cursor.execute(
+            get_from_sql(
+                "query_statements/normalized_field_to_field_id.sql",
+                source_name=self.__source_name,
+            )
+        )
+        normalized_fields = list(cursor.fetchall())
+        for field_name, field_id in normalized_fields:
+            output[field_name] = field_id
+        return output
+
     def get_local_field(self, statement_type: str, source_field: str):
         if source_field in self.__mapped_fields[statement_type]:
             return self.__mapped_fields[statement_type][source_field]
+
+    def get_normalized_field_id(self, normalized_field: str):
+        if normalized_field in self.__mapped_normalized_field_ids:
+            return self.__mapped_normalized_field_ids[normalized_field]
