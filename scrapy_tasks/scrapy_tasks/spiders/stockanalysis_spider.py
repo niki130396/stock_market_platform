@@ -78,7 +78,6 @@ class StockAnalysisSpider(FinancialStatementCrawlSpider):
                     value = el.xpath(".//span/text()[1]").get()
                     row_values.append(value)
 
-                self.logger.warning(row_values)
                 while (
                     row_values[-1] is None
                     or not row_values[-1]
