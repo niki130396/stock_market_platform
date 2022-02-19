@@ -6,13 +6,8 @@ from scrapy_tasks.base_spiders import FinancialStatementCrawlSpider  # noqa F401
 from scrapy_tasks.items import FinancialStatementItem  # noqa F401
 
 sys.path.insert(0, f"{environ['AIRFLOW_HOME']}/plugins/")
-from utils.db_tools import (  # noqa E402
-    NormalizedFieldsProcessor,
-    get_company_id,
-    get_next_unfetched_ticker,
-    get_source_statement_types_map,
-    map_normalized_field_to_field_id,
-)
+from utils.common import parse_numeric_string  # noqa E402
+from utils.db_tools import get_next_unfetched_ticker  # noqa E402
 
 
 class StockAnalysisSpider(FinancialStatementCrawlSpider):
@@ -50,10 +45,12 @@ class StockAnalysisSpider(FinancialStatementCrawlSpider):
         local_statement_type = response.meta.get("statement_type")
 
         rows = self.get_rows(response, local_statement_type)
+        rows_to_insert = self.arrange_rows_for_insertion(rows, document)
 
         item = FinancialStatementItem()
-        item["metadata"] = response.meta.get("document")
-        item["data"] = rows
+        item["metadata"] = response.meta.get("document").__dict__
+        item["metadata"]["statement_type"] = local_statement_type
+        item["data"] = rows_to_insert
         yield item
 
     def get_rows(self, response, statement_type):
@@ -76,19 +73,12 @@ class StockAnalysisSpider(FinancialStatementCrawlSpider):
                 row_values.append(normalized_row_name)
                 for el in elements[1:]:
                     value = el.xpath(".//span/text()[1]").get()
-                    row_values.append(value)
+                    row_values.append(parse_numeric_string(value))
 
-                while (
-                    row_values[-1] is None
-                    or not row_values[-1]
-                    .replace(".", "", 1)
-                    .replace("-", "", 1)
-                    .isdigit()
-                ):
+                while row_values[-1] is None or isinstance(row_values[-1], str):
                     row_values.pop()
 
                 parsed_rows.append(row_values)
-
         return parsed_rows
 
     @staticmethod
@@ -104,5 +94,20 @@ class StockAnalysisSpider(FinancialStatementCrawlSpider):
             for element in years[1:]:
                 value = element.xpath("./text()[1]").get()
                 if value:
-                    output.append(value)
+                    output.append(parse_numeric_string(value))
+        return output
+
+    def arrange_rows_for_insertion(self, rows, document):
+        output = []
+        for i in range(1, len(rows[0])):
+            period = rows[0][i]
+            for row in rows[1:]:
+                field_id = self.normalized_field_processor.get_normalized_field_id(
+                    row[0]
+                )
+                try:
+                    value = row[i]
+                except IndexError:
+                    continue
+                output.append((document.id, field_id, period, value))
         return output
