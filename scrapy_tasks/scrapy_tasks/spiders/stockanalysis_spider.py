@@ -73,9 +73,10 @@ class StockAnalysisSpider(FinancialStatementCrawlSpider):
                 row_values.append(normalized_row_name)
                 for el in elements[1:]:
                     value = el.xpath(".//span/text()[1]").get()
-                    row_values.append(parse_numeric_string(value))
+                    if value:
+                        row_values.append(parse_numeric_string(value))
 
-                while row_values[-1] is None or isinstance(row_values[-1], str):
+                while row_values[-1] is isinstance(row_values[-1], str):
                     row_values.pop()
 
                 parsed_rows.append(row_values)
