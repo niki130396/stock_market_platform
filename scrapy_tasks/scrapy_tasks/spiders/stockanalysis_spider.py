@@ -76,7 +76,7 @@ class StockAnalysisSpider(FinancialStatementCrawlSpider):
                     if value:
                         row_values.append(parse_numeric_string(value))
 
-                while row_values[-1] is isinstance(row_values[-1], str):
+                while isinstance(row_values[-1], str):
                     row_values.pop()
 
                 parsed_rows.append(row_values)
