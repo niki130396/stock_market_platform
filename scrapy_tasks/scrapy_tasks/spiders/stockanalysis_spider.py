@@ -1,6 +1,7 @@
 import sys
 from os import environ
 
+from scrapy.exceptions import CloseSpider
 from scrapy.http import Request
 from scrapy_tasks.base_spiders import FinancialStatementCrawlSpider  # noqa F401
 from scrapy_tasks.items import FinancialStatementItem  # noqa F401
@@ -12,6 +13,7 @@ from utils.db_tools import get_next_unfetched_ticker  # noqa E402
 
 class StockAnalysisSpider(FinancialStatementCrawlSpider):
     name = "stock_analysis_spider"
+    handle_httpstatus_list = [200, 429]
     source_name = "stock_analysis"
     income_statement_source_definition = ("", "income_statement")
     balance_sheet_statement_source_definition = ("balance-sheet", "balance_sheet")
@@ -41,6 +43,11 @@ class StockAnalysisSpider(FinancialStatementCrawlSpider):
                 )
 
     def parse(self, response, **kwargs):
+        if response.status == 429:
+            raise CloseSpider(
+                reason="Spider is blacklisted and we will have to give it some time out"
+            )
+
         document = response.meta.get("document")
         local_statement_type = response.meta.get("statement_type")
 
