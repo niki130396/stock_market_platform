@@ -41,7 +41,7 @@ class StockAnalysisSpider(FinancialStatementCrawlSpider):
                 )
 
     def parse(self, response, **kwargs):
-        document = response.meta.get("document")  # noqa F841
+        document = response.meta.get("document")
         local_statement_type = response.meta.get("statement_type")
 
         rows = self.get_rows(response, local_statement_type)
